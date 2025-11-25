@@ -1,0 +1,69 @@
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px;
+  }
+  
+  .title {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .mode-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .toggle {
+    padding: 10px 20px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  
+  .toggle.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+  }
+  
+  .text-input {
+    width: 100%;
+    height: 200px;
+    resize: none;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+  }
+  
+  .pdf-upload {
+    width: 100%;
+    padding: 50px;
+    border: 2px dashed #aaa;
+    text-align: center;
+    background: #fafafa;
+    color: #555;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .options {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .redact-btn {
+    margin-top: 25px;
+    padding: 12px 25px;
+    border: none;
+    background: #007bff;
+    color: white;
+    border-radius: 6px;
+    font-size: 16px;
+  }
+  

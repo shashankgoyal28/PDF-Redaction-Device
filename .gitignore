@@ -1,0 +1,13 @@
+# Python backend
+venv/
+__pycache__/
+*.pyc
+redacted_pdfs/
+
+# React frontend
+node_modules/
+dist/
+build/
+
+# OS Files
+.DS_Store

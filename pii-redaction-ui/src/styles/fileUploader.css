@@ -1,0 +1,23 @@
+.file-upload-box {
+    width: 100%;
+    padding: 40px;
+    border: 2px dashed #aaa;
+    background: #fafafa;
+    border-radius: 8px;
+    text-align: center;
+    position: relative;
+    color: #555;
+  }
+  
+  .file-upload-box:hover {
+    background: #f0f0f0;
+  }
+  
+  .file-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  
+  
