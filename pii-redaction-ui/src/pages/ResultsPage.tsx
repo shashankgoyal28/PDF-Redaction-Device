@@ -877,258 +877,424 @@
 //   );
 // }
 
-
+// this 
 // src/pages/ResultsPage.tsx
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import {
-  downloadRedactedFile,
-  downloadRedactedFileFromPath,
-} from "../api/redact";
+// import React, { useState } from "react";
+// import { useNavigate, useLocation } from "react-router-dom";
+// import {
+//   downloadRedactedFile,
+//   downloadRedactedFileFromPath,
+// } from "../api/redact";
 
-const FALLBACK_LOCAL_PATH = "/mnt/data/Screenshot 2025-11-20 at 9.00.47 PM.png";
+// const FALLBACK_LOCAL_PATH = "/mnt/data/Screenshot 2025-11-20 at 9.00.47 PM.png";
+
+// export default function ResultsPage() {
+//   const navigate = useNavigate();
+//   const location = useLocation();
+
+//   const {
+//     original_text = "No original text received.",
+//     redacted_text = "No redacted text received.",
+//     summary = { counts: {}, items: [] },
+//     file = null,
+//     options: passedOptions = null,
+//     labelStyle: passedLabelStyle = null,
+//     customLabel: passedCustomLabel = null,
+//   } = (location.state as any) || {};
+
+//   const [activeTab, setActiveTab] = useState<
+//     "original" | "redacted" | "summary" | "file"
+//   >("original");
+
+//   const currentOptions = {
+//     redact_emails: passedOptions?.emails ?? passedOptions?.redact_emails ?? true,
+//     redact_phones: passedOptions?.phones ?? passedOptions?.redact_phones ?? true,
+//     redact_names: passedOptions?.names ?? passedOptions?.redact_names ?? false,
+//     redact_addresses:
+//       passedOptions?.addresses ?? passedOptions?.redact_addresses ?? false,
+//     label_style: passedLabelStyle ?? (passedOptions?.label_style ?? "typed"),
+//     custom_label: passedCustomLabel ?? passedOptions?.custom_label ?? null,
+//   };
+
+//   // Helper to trigger browser download from blob
+//   function downloadBlob(blob: Blob, filename = "redacted_file.pdf") {
+//     const url = URL.createObjectURL(blob);
+//     const a = document.createElement("a");
+//     a.href = url;
+//     a.download = filename;
+//     document.body.appendChild(a);
+//     a.click();
+//     a.remove();
+//     URL.revokeObjectURL(url);
+//   }
+
+//   // Download handler: tries (1) original File object -> backend, (2) server-local path fallback, (3) download_url
+//   async function handleDownloadRedactedPDF() {
+//     try {
+//       const originalFile: File | undefined =
+//         file?.originFile ?? file?.fileObject ?? null;
+
+//       if (originalFile) {
+//         const blob = await downloadRedactedFile(originalFile, {
+//           redact_emails: currentOptions.redact_emails,
+//           redact_phones: currentOptions.redact_phones,
+//           redact_names: currentOptions.redact_names,
+//           redact_addresses: currentOptions.redact_addresses,
+//           label_style: currentOptions.label_style,
+//           custom_label: currentOptions.custom_label,
+//         });
+//         downloadBlob(blob, `redacted_${originalFile.name || "file"}.pdf`);
+//         return;
+//       }
+
+//       const fallbackPath =
+//         file?.url ??
+//         file?.path ??
+//         (location.state && (location.state as any).file_url) ??
+//         FALLBACK_LOCAL_PATH;
+
+//       if (typeof fallbackPath === "string" && fallbackPath.startsWith("/mnt/")) {
+//         // call backend helper that accepts a server-local path (backend must support this endpoint)
+//         const blob = await downloadRedactedFileFromPath(fallbackPath, {
+//           redact_emails: currentOptions.redact_emails,
+//           redact_phones: currentOptions.redact_phones,
+//           redact_names: currentOptions.redact_names,
+//           redact_addresses: currentOptions.redact_addresses,
+//           label_style: currentOptions.label_style,
+//           custom_label: currentOptions.custom_label,
+//         });
+//         downloadBlob(blob, `redacted_local_file.pdf`);
+//         return;
+//       }
+
+//       // final fallback: if backend provided a download_url in location.state
+//       const downloadUrl = (location.state as any)?.download_url;
+//       if (downloadUrl) {
+//         // import API_BASE from api module to use as base for relative URLs
+//         const apiModule = await import("../api/redact");
+//         const apiBase = apiModule.API_BASE || "http://localhost:8000/api";
+
+//         // build absolute URL robustly (handles absolute or relative downloadUrl)
+//         const fullUrl = downloadUrl.startsWith("http")
+//           ? downloadUrl
+//           : new URL(downloadUrl, apiBase).toString();
+
+//         const res = await fetch(fullUrl);
+//         if (!res.ok) {
+//           const text = await res.text().catch(() => "");
+//           throw new Error(
+//             `Failed to fetch server redacted PDF: ${res.status} ${res.statusText} ${text}`
+//           );
+//         }
+
+//         const blob = await res.blob();
+
+//         // Try to read filename from Content-Disposition header, fallback to sensible defaults
+//         const contentDisposition = res.headers.get("content-disposition") || "";
+//         let filename = "redacted_download.pdf";
+
+//         // Try to parse filename*=UTF-8''... or filename="..."
+//         const filenameMatch =
+//           /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/.exec(
+//             contentDisposition
+//           );
+//         if (filenameMatch) {
+//           // prefer RFC5987 encoded filename (first capture) otherwise second
+//           const rawName = decodeURIComponent(
+//             (filenameMatch[1] || filenameMatch[2] || filename).replace(
+//               /(^"|"$)/g,
+//               ""
+//             )
+//           );
+//           filename = rawName;
+//         } else if ((location.state as any)?.file?.name) {
+//           // preserve original uploaded filename if available
+//           filename = `redacted_${(location.state as any).file.name}`;
+//         }
+
+//         downloadBlob(blob, filename);
+//         return;
+//       }
+
+//       alert("No uploaded file available for download. Re-upload in PDF mode and try again.");
+//     } catch (err: any) {
+//       console.error("Download error:", err);
+//       alert(err?.message || "Download failed. See console.");
+//     }
+//   }
+
+//   return (
+//     <div className="results-container">
+//       <h1 className="results-title">Redaction Results</h1>
+
+//       <div className="tabs">
+//         <button
+//           className={activeTab === "original" ? "tab active" : "tab"}
+//           onClick={() => setActiveTab("original")}
+//         >
+//           Original
+//         </button>
+
+//         <button
+//           className={activeTab === "redacted" ? "tab active" : "tab"}
+//           onClick={() => setActiveTab("redacted")}
+//         >
+//           Redacted
+//         </button>
+
+//         <button
+//           className={activeTab === "summary" ? "tab active" : "tab"}
+//           onClick={() => setActiveTab("summary")}
+//         >
+//           Summary
+//         </button>
+
+//         {file?.url && (
+//           <button
+//             className={activeTab === "file" ? "tab active" : "tab"}
+//             onClick={() => setActiveTab("file")}
+//           >
+//             File Preview
+//           </button>
+//         )}
+//       </div>
+
+//       <div className="results-box">
+//         {activeTab === "original" && (
+//           <pre className="text-box">{original_text}</pre>
+//         )}
+//         {activeTab === "redacted" && (
+//           <pre className="text-box">{redacted_text}</pre>
+//         )}
+
+//         {activeTab === "summary" && (
+//           <div className="summary-box">
+//             <h3>Summary of Redaction</h3>
+//             <h4>Counts</h4>
+//             <ul>
+//               {Object.entries((summary && summary.counts) || {}).map(
+//                 ([key, value]) => (
+//                   <li key={key}>
+//                     <strong>{key}</strong>: {value as any}
+//                   </li>
+//                 )
+//               )}
+//             </ul>
+
+//             <h4>Redacted Items</h4>
+//             <ul>
+//               {(summary && summary.items ? summary.items : []).map(
+//                 (item: any, index: number) => (
+//                   <li key={index}>
+//                     <strong>{item.type}</strong>: {item.original} →{" "}
+//                     <span className="label">{item.label}</span>
+//                   </li>
+//                 )
+//               )}
+//             </ul>
+//           </div>
+//         )}
+
+//         {activeTab === "file" && file?.url && (
+//           <div className="file-preview">
+//             <h3>Uploaded File Preview</h3>
+//             {file.type === "application/pdf" ? (
+//               <iframe
+//                 src={file.url}
+//                 width="100%"
+//                 height="500px"
+//                 title="PDF Preview"
+//               ></iframe>
+//             ) : (
+//               <img src={file.url} alt="Uploaded" className="preview-image" />
+//             )}
+
+//             <div style={{ marginTop: 12 }}>
+//               <button className="download-btn" onClick={handleDownloadRedactedPDF}>
+//                 Download Redacted PDF
+//               </button>
+//             </div>
+//           </div>
+//         )}
+//       </div>
+
+//       <div style={{ marginTop: 16 }}>
+//         {!file?.url && file && (
+//           <button className="download-btn" onClick={handleDownloadRedactedPDF}>
+//             Download Redacted PDF
+//           </button>
+//         )}
+//       </div>
+
+//       <button className="back-btn" onClick={() => navigate("/")}>
+//         Back
+//       </button>
+//     </div>
+//   );
+// }
+
+
+
+import React, { useState } from "react";
+import "../styles/resultsPage.css";
+import { useNavigate, useLocation } from "react-router-dom";
+import { downloadRedactedFileFromPath } from "../api/redact"; // make sure this export exists
 
 export default function ResultsPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Data passed from InputPage (backend response)
   const {
     original_text = "No original text received.",
     redacted_text = "No redacted text received.",
     summary = { counts: {}, items: [] },
-    file = null,
-    options: passedOptions = null,
-    labelStyle: passedLabelStyle = null,
-    customLabel: passedCustomLabel = null,
-  } = (location.state as any) || {};
+    file = null, // { url, type, name }
+    // keep the options & label preferences for download request
+    options = { redact_emails: true, redact_phones: true, redact_names: false, redact_addresses: false },
+    labelStyle = "typed",
+    customLabel = null,
+  } = location.state || {};
 
-  const [activeTab, setActiveTab] = useState<
-    "original" | "redacted" | "summary" | "file"
-  >("original");
+  const [activeTab, setActiveTab] = useState<"original" | "redacted" | "summary" | "file">("original");
+  const [downloading, setDownloading] = useState(false);
 
-  const currentOptions = {
-    redact_emails: passedOptions?.emails ?? passedOptions?.redact_emails ?? true,
-    redact_phones: passedOptions?.phones ?? passedOptions?.redact_phones ?? true,
-    redact_names: passedOptions?.names ?? passedOptions?.redact_names ?? false,
-    redact_addresses:
-      passedOptions?.addresses ?? passedOptions?.redact_addresses ?? false,
-    label_style: passedLabelStyle ?? (passedOptions?.label_style ?? "typed"),
-    custom_label: passedCustomLabel ?? passedOptions?.custom_label ?? null,
-  };
+  // -------- Download handler using blob URL (safe)
+  async function handleDownload() {
+    try {
+      if (!file?.url) {
+        alert("No file available for download.");
+        return;
+      }
+      setDownloading(true);
 
-  // Helper to trigger browser download from blob
-  function downloadBlob(blob: Blob, filename = "redacted_file.pdf") {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+      // Ask backend to return PDF bytes (server must support `file_path` or file upload)
+      // For local dev, file.url can be something like "/mnt/data/..."
+      const blob = await downloadRedactedFileFromPath(file.url, {
+        redact_emails: options.redact_emails ?? true,
+        redact_phones: options.redact_phones ?? true,
+        redact_names: options.redact_names ?? false,
+        redact_addresses: options.redact_addresses ?? false,
+        label_style: labelStyle,
+        custom_label: customLabel ?? undefined,
+      });
+
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = file.name ? `redacted_${file.name}` : "redacted_output.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      // release memory
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Download error:", err);
+      alert("Failed to download redacted PDF. Check backend logs.");
+    } finally {
+      setDownloading(false);
+    }
   }
 
-  // Download handler: tries (1) original File object -> backend, (2) server-local path fallback, (3) download_url
-  async function handleDownloadRedactedPDF() {
+  // -------- Copy summary to clipboard
+  async function handleCopySummary() {
+    const lines = [
+      "Redaction Summary",
+      `Counts: ${Object.entries(summary.counts).map(([k,v]) => `${k}:${v}`).join(" • ")}`,
+      "",
+      "Items:",
+      ...summary.items.map((it: any, i: number) => `${i+1}. ${it.type}: "${it.original}" → ${it.label}`)
+    ];
+    const text = lines.join("\n");
     try {
-      const originalFile: File | undefined =
-        file?.originFile ?? file?.fileObject ?? null;
-
-      if (originalFile) {
-        const blob = await downloadRedactedFile(originalFile, {
-          redact_emails: currentOptions.redact_emails,
-          redact_phones: currentOptions.redact_phones,
-          redact_names: currentOptions.redact_names,
-          redact_addresses: currentOptions.redact_addresses,
-          label_style: currentOptions.label_style,
-          custom_label: currentOptions.custom_label,
-        });
-        downloadBlob(blob, `redacted_${originalFile.name || "file"}.pdf`);
-        return;
-      }
-
-      const fallbackPath =
-        file?.url ??
-        file?.path ??
-        (location.state && (location.state as any).file_url) ??
-        FALLBACK_LOCAL_PATH;
-
-      if (typeof fallbackPath === "string" && fallbackPath.startsWith("/mnt/")) {
-        // call backend helper that accepts a server-local path (backend must support this endpoint)
-        const blob = await downloadRedactedFileFromPath(fallbackPath, {
-          redact_emails: currentOptions.redact_emails,
-          redact_phones: currentOptions.redact_phones,
-          redact_names: currentOptions.redact_names,
-          redact_addresses: currentOptions.redact_addresses,
-          label_style: currentOptions.label_style,
-          custom_label: currentOptions.custom_label,
-        });
-        downloadBlob(blob, `redacted_local_file.pdf`);
-        return;
-      }
-
-      // final fallback: if backend provided a download_url in location.state
-      const downloadUrl = (location.state as any)?.download_url;
-      if (downloadUrl) {
-        // import API_BASE from api module to use as base for relative URLs
-        const apiModule = await import("../api/redact");
-        const apiBase = apiModule.API_BASE || "http://localhost:8000/api";
-
-        // build absolute URL robustly (handles absolute or relative downloadUrl)
-        const fullUrl = downloadUrl.startsWith("http")
-          ? downloadUrl
-          : new URL(downloadUrl, apiBase).toString();
-
-        const res = await fetch(fullUrl);
-        if (!res.ok) {
-          const text = await res.text().catch(() => "");
-          throw new Error(
-            `Failed to fetch server redacted PDF: ${res.status} ${res.statusText} ${text}`
-          );
-        }
-
-        const blob = await res.blob();
-
-        // Try to read filename from Content-Disposition header, fallback to sensible defaults
-        const contentDisposition = res.headers.get("content-disposition") || "";
-        let filename = "redacted_download.pdf";
-
-        // Try to parse filename*=UTF-8''... or filename="..."
-        const filenameMatch =
-          /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/.exec(
-            contentDisposition
-          );
-        if (filenameMatch) {
-          // prefer RFC5987 encoded filename (first capture) otherwise second
-          const rawName = decodeURIComponent(
-            (filenameMatch[1] || filenameMatch[2] || filename).replace(
-              /(^"|"$)/g,
-              ""
-            )
-          );
-          filename = rawName;
-        } else if ((location.state as any)?.file?.name) {
-          // preserve original uploaded filename if available
-          filename = `redacted_${(location.state as any).file.name}`;
-        }
-
-        downloadBlob(blob, filename);
-        return;
-      }
-
-      alert("No uploaded file available for download. Re-upload in PDF mode and try again.");
-    } catch (err: any) {
-      console.error("Download error:", err);
-      alert(err?.message || "Download failed. See console.");
+      await navigator.clipboard.writeText(text);
+      alert("Summary copied to clipboard");
+    } catch {
+      alert("Copy failed — your browser might block clipboard access.");
     }
   }
 
   return (
-    <div className="results-container">
-      <h1 className="results-title">Redaction Results</h1>
+    <div className="results-root">
+      <div className="results-card">
+        <h1 className="results-heading">Redaction Results</h1>
 
-      <div className="tabs">
-        <button
-          className={activeTab === "original" ? "tab active" : "tab"}
-          onClick={() => setActiveTab("original")}
-        >
-          Original
-        </button>
+        <div className="tabs-row" role="tablist" aria-label="Results tabs">
+          <button role="tab" aria-selected={activeTab === "original"} className={`tab ${activeTab === "original" ? "active" : ""}`} onClick={() => setActiveTab("original")}>Original</button>
+          <button role="tab" aria-selected={activeTab === "redacted"} className={`tab ${activeTab === "redacted" ? "active" : ""}`} onClick={() => setActiveTab("redacted")}>Redacted</button>
+          <button role="tab" aria-selected={activeTab === "summary"} className={`tab ${activeTab === "summary" ? "active" : ""}`} onClick={() => setActiveTab("summary")}>Summary</button>
+          {file?.url && <button role="tab" aria-selected={activeTab === "file"} className={`tab ${activeTab === "file" ? "active" : ""}`} onClick={() => setActiveTab("file")}>File Preview</button>}
+        </div>
 
-        <button
-          className={activeTab === "redacted" ? "tab active" : "tab"}
-          onClick={() => setActiveTab("redacted")}
-        >
-          Redacted
-        </button>
-
-        <button
-          className={activeTab === "summary" ? "tab active" : "tab"}
-          onClick={() => setActiveTab("summary")}
-        >
-          Summary
-        </button>
-
-        {file?.url && (
-          <button
-            className={activeTab === "file" ? "tab active" : "tab"}
-            onClick={() => setActiveTab("file")}
-          >
-            File Preview
-          </button>
-        )}
-      </div>
-
-      <div className="results-box">
-        {activeTab === "original" && (
-          <pre className="text-box">{original_text}</pre>
-        )}
-        {activeTab === "redacted" && (
-          <pre className="text-box">{redacted_text}</pre>
-        )}
-
-        {activeTab === "summary" && (
-          <div className="summary-box">
-            <h3>Summary of Redaction</h3>
-            <h4>Counts</h4>
-            <ul>
-              {Object.entries((summary && summary.counts) || {}).map(
-                ([key, value]) => (
-                  <li key={key}>
-                    <strong>{key}</strong>: {value as any}
-                  </li>
-                )
-              )}
-            </ul>
-
-            <h4>Redacted Items</h4>
-            <ul>
-              {(summary && summary.items ? summary.items : []).map(
-                (item: any, index: number) => (
-                  <li key={index}>
-                    <strong>{item.type}</strong>: {item.original} →{" "}
-                    <span className="label">{item.label}</span>
-                  </li>
-                )
-              )}
-            </ul>
-          </div>
-        )}
-
-        {activeTab === "file" && file?.url && (
-          <div className="file-preview">
-            <h3>Uploaded File Preview</h3>
-            {file.type === "application/pdf" ? (
-              <iframe
-                src={file.url}
-                width="100%"
-                height="500px"
-                title="PDF Preview"
-              ></iframe>
-            ) : (
-              <img src={file.url} alt="Uploaded" className="preview-image" />
+        <div className="content-row">
+          {/* LEFT: main content */}
+          <div className="main-column">
+            {activeTab === "original" && (
+              <pre className="text-box" aria-label="Original text">{original_text}</pre>
             )}
 
-            <div style={{ marginTop: 12 }}>
-              <button className="download-btn" onClick={handleDownloadRedactedPDF}>
-                Download Redacted PDF
+            {activeTab === "redacted" && (
+              <pre className="text-box" aria-label="Redacted text">{redacted_text}</pre>
+            )}
+
+            {activeTab === "summary" && (
+              <div className="summary-view">
+                <h3>Summary of Redaction</h3>
+
+                <div className="stats-row">
+                  {["NAME","EMAIL","PHONE","ADDRESS"].map((k) => (
+                    <div key={k} className="stat-card" aria-hidden>
+                      <div className="stat-title">{k}</div>
+                      <div className="stat-value">{summary.counts[k] ?? 0}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="summary-list">
+                  <h4>Redacted Items</h4>
+                  <ul>
+                    {summary.items.map((item: any, idx: number) => (
+                      <li key={idx} className="summary-item">
+                        <div className="item-left">
+                          <span className="item-type">{item.type}</span>
+                          <code className="item-original"> {item.original}</code>
+                        </div>
+                        <div className="item-right">
+                          <span className="item-label">{item.label}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "file" && file?.url && (
+              <div className="file-preview">
+                <h3>Uploaded File Preview</h3>
+                {file.type === "application/pdf" ? (
+                  <iframe src={file.url} title="PDF preview" className="pdf-iframe" />
+                ) : (
+                  <img src={file.url} alt="uploaded preview" className="preview-image" />
+                )}
+              </div>
+            )}
+
+            <div className="actions-row">
+              <button className="btn btn-secondary" onClick={() => navigate("/")}>Back</button>
+
+              <div style={{ flex: 1 }} />
+
+              <button className="btn btn-ghost" onClick={handleCopySummary}>Copy Summary</button>
+
+              <button className="btn btn-primary" onClick={handleDownload} disabled={downloading}>
+                {downloading ? "Downloading…" : "Download Redacted PDF"}
               </button>
             </div>
           </div>
-        )}
-      </div>
 
-      <div style={{ marginTop: 16 }}>
-        {!file?.url && file && (
-          <button className="download-btn" onClick={handleDownloadRedactedPDF}>
-            Download Redacted PDF
-          </button>
-        )}
+        </div>
       </div>
-
-      <button className="back-btn" onClick={() => navigate("/")}>
-        Back
-      </button>
     </div>
   );
 }

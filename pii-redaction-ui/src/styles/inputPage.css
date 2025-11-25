@@ -1,4 +1,4 @@
-.container {
+/* .container {
     max-width: 900px;
     margin: 0 auto;
     padding: 40px;
@@ -66,4 +66,61 @@
     border-radius: 6px;
     font-size: 16px;
   }
-  
+   */
+   /* File upload area (dashed box) — improved styling */
+.pdf-dropzone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 140px;
+  width: 100%;
+  box-sizing: border-box;
+
+  /* dashed border that respects rounded corners */
+  border: 2px dashed #cbd5e1;      /* softer gray for dashed */
+  border-radius: 12px;             /* match card corner radius */
+  background: linear-gradient(180deg, rgba(249,250,252,0.6), rgba(255,255,255,0.45));
+  padding: 18px;
+  margin: 10px 0 18px 0;
+
+  /* subtle inner shadow — keeps dashed box visible over card shadow */
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 6px 16px rgba(14,20,30,0.03);
+
+  /* avoid double border look by hiding outside card border overlap */
+  overflow: hidden;
+}
+
+/* text inside box */
+.pdf-dropzone .hint {
+  color: #475569;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+}
+
+/* hover / focus styles (file picker interactive) */
+.pdf-dropzone:hover {
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+  transition: all .15s ease;
+}
+
+.pdf-dropzone:focus-within {
+  outline: none;
+  border-color: #6366f1;   /* blue highlight when active */
+  box-shadow: 0 6px 20px rgba(99,102,241,0.08);
+}
+
+/* image/preview inside dropzone (keeps aspect & rounded corners) */
+.pdf-dropzone img.preview,
+.pdf-dropzone iframe.preview {
+  max-width: 100%;
+  max-height: 220px;
+  border-radius: 8px;
+  object-fit: contain;
+  display: block;
+}
+
+/* make sure card padding & dropzone border don't visually clash on small screens */
+@media (max-width: 480px) {
+  .pdf-dropzone { padding: 14px; min-height: 120px; border-radius: 10px; }
+}

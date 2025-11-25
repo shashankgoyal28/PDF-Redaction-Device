@@ -1,4 +1,4 @@
-body {
+/* body {
   margin: 0;
   padding: 0;
   background: #f8f8f8;
@@ -15,4 +15,127 @@ button {
 
 input, textarea {
   font-family: inherit;
+} */
+
+/* put into src/styles/global.css OR src/styles/inputPage.css */
+
+/* 1. page-level centering */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  align-items: center;       /* vertical center */
+  justify-content: center;   /* horizontal center */
+  background: #f6f7fb;       /* subtle background */
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #111827;
+}
+
+/* 2. main app card */
+.container {
+  width: 100%;
+  max-width: 920px;       /* card width */
+  margin: 24px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(14, 20, 30, 0.08);
+  padding: 36px;
+  box-sizing: border-box;
+}
+
+/* 3. page title */
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 18px 0;
+  color: #0f1724;
+}
+
+/* 4. mode toggle (left aligned inside card) */
+.mode-toggle {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* style toggles like buttons */
+.toggle {
+  border: 1px solid #e6e9ee;
+  background: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #111827;
+}
+.toggle.active {
+  background: linear-gradient(90deg,#1d4ed8,#7c3aed);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 6px 18px rgba(99,102,241,0.12);
+}
+
+/* textarea */
+.text-input {
+  width: 100%;
+  min-height: 220px;
+  resize: vertical;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #e6e9ee;
+  font-size: 15px;
+  box-sizing: border-box;
+  margin-bottom: 18px;
+  background: #fbfcfe;
+}
+
+/* options + label style */
+.options, .label-style {
+  margin-top: 8px;
+  margin-bottom: 18px;
+}
+
+.options h2, .label-style h2 {
+  margin: 10px 0;
+  font-size: 16px;
+  color: #0f1724;
+}
+
+/* checkboxes / radio */
+.options label, .label-style label {
+  display: block;
+  margin: 8px 0;
+  font-weight: 600;
+  color: #0f1724;
+}
+
+/* button primary */
+.redact-btn {
+  appearance: none;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: linear-gradient(90deg,#1d4ed8,#7c3aed);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(99,102,241,0.12);
+}
+
+/* small screens: make the card fill most of the viewport */
+@media (max-width: 640px) {
+  .container {
+    padding: 20px;
+    margin: 12px;
+    border-radius: 12px;
+  }
+
+  .text-input {
+    min-height: 160px;
+  }
 }
