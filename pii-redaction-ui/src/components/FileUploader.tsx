@@ -1,32 +1,6 @@
-// import React from "react";
-// import "../styles/fileUploader.css";
-
-// interface Props {
-//   onFileSelect: (file: File | null) => void;
-// }
-
-// export default function FileUploader({ onFileSelect }: Props) {
-//   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-//     const file = e.target.files?.[0] || null;
-//     onFileSelect(file);
-//   }
-
-//   return (
-//     <div className="file-upload-box">
-//       <p>Click to choose a PDF file</p>
-//       <input
-//         type="file"
-//         accept="application/pdf"
-//         className="file-input"
-//         onChange={handleFileChange}
-//       />
-//     </div>
-//   );
-// }
-
 import React, { useRef, useState } from "react";
 
-const FALLBACK_FILE_URL = "/mnt/data/Screenshot 2025-11-20 at 9.00.47 PM.png"; // dev-only preview path
+const FALLBACK_FILE_URL = "/mnt/data/Screenshot 2025-11-20 at 9.00.47 PM.png"; 
 
 export default function FileUploader({ onFileSelect }: { onFileSelect: (f: File | null) => void }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -57,7 +31,6 @@ export default function FileUploader({ onFileSelect }: { onFileSelect: (f: File 
         onChange={onChange}
       />
       {previewUrl ? (
-        // small preview if it's an image, otherwise show hint (iframe preview might be heavy here)
         previewUrl.endsWith(".png") || previewUrl.endsWith(".jpg") || previewUrl.endsWith(".jpeg") ? (
           <img src={previewUrl} alt="preview" className="preview" />
         ) : (
