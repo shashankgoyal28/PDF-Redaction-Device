@@ -1,13 +1,25 @@
-# Python backend
+# Node
+node_modules/
+npm-debug.log
+
+# Python
 venv/
 __pycache__/
 *.pyc
-redacted_pdfs/
 
-# React frontend
-node_modules/
+# Build files
 dist/
 build/
 
-# OS Files
+# Environment / secrets
+.env
+
+# Mac files
 .DS_Store
+
+# VSCode
+.vscode/
+
+# Output PDFs
+redacted_pdfs/
+

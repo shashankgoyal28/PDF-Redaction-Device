@@ -1,4 +1,4 @@
-.file-upload-box {
+   .file-upload-box {
     width: 100%;
     padding: 40px;
     border: 2px dashed #aaa;
@@ -20,4 +20,8 @@
     cursor: pointer;
   }
   
+  /* You’re actually using .pdf-dropzone in FileUploader,
+     but that class is defined in inputPage.css.
+     Keeping this here is fine if you ever reuse .file-upload-box
+     for a different uploader. */
   

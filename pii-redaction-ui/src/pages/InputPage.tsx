@@ -1,8 +1,10 @@
+// src/pages/InputPage.tsx
 import React, { useState } from "react";
 import "../styles/inputPage.css";
 import FileUploader from "../components/FileUploader";
 import { useNavigate } from "react-router-dom";
 import { redactText, redactFile } from "../api/redact";
+import type { LabelStyle } from "../api/redact";
 
 export default function InputPage() {
   const navigate = useNavigate();
@@ -19,50 +21,22 @@ export default function InputPage() {
     addresses: false,
   });
 
-  const [labelStyle, setLabelStyle] = useState<"typed" | "blackbox" | "custom">(
-    "typed"
-  );
+  const [labelStyle, setLabelStyle] = useState<LabelStyle>("typed");
   const [customLabel, setCustomLabel] = useState("");
+
+  const ALLOWED_TYPES = ["application/pdf", "image/png", "image/jpeg"];
 
   function toggleOption(key: keyof typeof options) {
     setOptions((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
-  const FALLBACK_LOCAL_FILE = "/mnt/data/Screenshot 2025-11-20 at 9.00.47 PM.png";
-  const ALLOWED_TYPES = ["application/pdf", "image/png", "image/jpeg"];
-
   async function onRedact() {
     setIsSubmitting(true);
+
     try {
-      if (mode === "pdf") {
-        if (!selectedFile) {
-          const fakeResponse = {
-            original_text: "(PDF extraction not performed locally) - preview only",
-            redacted_text: "(Redacted PDF content will appear here)",
-            summary: { counts: {}, items: [] },
-          };
-
-          navigate("/results", {
-            state: {
-              ...fakeResponse,
-              file: {
-                name: "local-fallback.png",
-                size: null,
-                type: "image/png",
-                url: FALLBACK_LOCAL_FILE,
-              },
-            },
-          });
-          return;
-        }
-        if (!ALLOWED_TYPES.includes(selectedFile.type)) {
-          alert(
-            `Unsupported file type: ${selectedFile.type}. Please upload a PDF or PNG/JPEG image.`
-          );
-          return;
-        }
-
-        const payloadOptions = {
+      if (mode === "text") {
+        const payload = {
+          text,
           redact_emails: options.emails,
           redact_phones: options.phones,
           redact_names: options.names,
@@ -71,31 +45,20 @@ export default function InputPage() {
           custom_label: customLabel || null,
         };
 
-        let response;
+        let textResp;
         try {
-          response = await redactFile(selectedFile, payloadOptions);
+          textResp = await redactText(payload);
         } catch (err: any) {
-          console.error("redactFile error:", err);
-          alert(
-            err?.message ||
-              "File redaction failed. Check backend logs and ensure the file is a valid PDF."
-          );
+          console.error("Text redaction error:", err);
+          alert(err?.message || "Text redaction failed. Check backend logs.");
           return;
         }
-        const previewUrl = URL.createObjectURL(selectedFile);
 
         navigate("/results", {
           state: {
-            ...response,
-            file: {
-              name: selectedFile.name,
-              size: selectedFile.size,
-              type: selectedFile.type,
-              url: previewUrl,
-              originFile: selectedFile,
-            },
-
-            options: payloadOptions,
+            ...textResp,
+            file: null,
+            options: payload, 
             labelStyle,
             customLabel,
           },
@@ -104,9 +67,17 @@ export default function InputPage() {
         return;
       }
 
+      if (!selectedFile) {
+        alert("Please upload a PDF or image.");
+        return;
+      }
 
-      const payload = {
-        text,
+      if (!ALLOWED_TYPES.includes(selectedFile.type)) {
+        alert(`Unsupported file type: ${selectedFile.type}`);
+        return;
+      }
+
+      const payloadOptions = {
         redact_emails: options.emails,
         redact_phones: options.phones,
         redact_names: options.names,
@@ -115,19 +86,30 @@ export default function InputPage() {
         custom_label: customLabel || null,
       };
 
-      let textResp;
+      let response;
       try {
-        textResp = await redactText(payload);
+        response = await redactFile(selectedFile, payloadOptions);
       } catch (err: any) {
-        console.error("redactText error:", err);
-        alert(err?.message || "Text redaction failed. Check backend logs.");
+        console.error("PDF redaction error:", err);
+        alert(err?.message || "PDF redaction failed. Check backend logs.");
         return;
       }
 
+      const previewUrl = URL.createObjectURL(selectedFile);
+
       navigate("/results", {
         state: {
-          ...textResp,
-          file: null,
+          ...response, 
+          file: {
+            name: selectedFile.name,
+            size: selectedFile.size,
+            type: selectedFile.type,
+            url: previewUrl, 
+            originFile: selectedFile,
+          },
+          options: payloadOptions,
+          labelStyle,
+          customLabel,
         },
       });
     } finally {
@@ -147,7 +129,6 @@ export default function InputPage() {
         >
           Text Mode
         </button>
-
         <button
           className={mode === "pdf" ? "toggle active" : "toggle"}
           onClick={() => setMode("pdf")}
@@ -156,7 +137,7 @@ export default function InputPage() {
         </button>
       </div>
 
-      {/* Text Mode */}
+      {/* TEXT INPUT */}
       {mode === "text" && (
         <textarea
           className="text-input"
@@ -166,14 +147,12 @@ export default function InputPage() {
         />
       )}
 
-      {/* PDF Upload */}
+      {/* PDF UPLOADER */}
       {mode === "pdf" && (
         <FileUploader
           onFileSelect={(file) => {
             if (file && !ALLOWED_TYPES.includes(file.type)) {
-              alert(
-                `Unsupported file type selected: ${file.type}. Please choose a PDF or PNG/JPEG.`
-              );
+              alert(`Unsupported file type: ${file.type}`);
               setSelectedFile(null);
               return;
             }
@@ -182,7 +161,7 @@ export default function InputPage() {
         />
       )}
 
-      {/* Redaction Options */}
+      {/* Options */}
       <div className="options">
         <h2>Redaction Options</h2>
 
@@ -194,7 +173,6 @@ export default function InputPage() {
           />
           Emails
         </label>
-
         <label>
           <input
             type="checkbox"
@@ -203,7 +181,6 @@ export default function InputPage() {
           />
           Phone Numbers
         </label>
-
         <label>
           <input
             type="checkbox"
@@ -212,7 +189,6 @@ export default function InputPage() {
           />
           Names
         </label>
-
         <label>
           <input
             type="checkbox"
@@ -223,7 +199,7 @@ export default function InputPage() {
         </label>
       </div>
 
-      {/* Label Style */}
+      {/* Label style */}
       <div className="label-style">
         <h2>Label Style</h2>
 
@@ -235,7 +211,7 @@ export default function InputPage() {
             checked={labelStyle === "typed"}
             onChange={() => setLabelStyle("typed")}
           />
-          Typed Label ([EMAIL_1])
+          Typed ([EMAIL_1])
         </label>
 
         <label>
@@ -271,15 +247,14 @@ export default function InputPage() {
         )}
       </div>
 
-      {/* Redact Button */}
-      <button
-        className="redact-btn"
-        onClick={onRedact}
-        disabled={isSubmitting}
-      >
+      <button className="redact-btn" onClick={onRedact} disabled={isSubmitting}>
         {isSubmitting ? "Processing…" : "REDACT"}
       </button>
     </div>
   );
 }
+
+
+
+
 

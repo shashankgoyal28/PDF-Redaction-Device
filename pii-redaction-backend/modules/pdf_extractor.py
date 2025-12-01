@@ -1,3 +1,10 @@
+# Purpose of this module
+# This module is responsible for extracting text from:
+# PDF files (using pdfplumber)
+# Image files (using OCR with PIL + pytesseract, if available)
+# It takes raw bytes or an UploadFile from FastAPI and 
+# returns plain text that will later be scanned for PII.
+
 import io
 import pdfplumber
 

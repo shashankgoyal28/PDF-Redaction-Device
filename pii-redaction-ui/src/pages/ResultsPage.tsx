@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "../styles/resultsPage.css";
 import { useNavigate, useLocation } from "react-router-dom";
-import { downloadRedactedFileFromPath } from "../api/redact"; 
+import { downloadRedactedFileByUrl } from "../api/redact";
 
 export default function ResultsPage() {
   const navigate = useNavigate();
@@ -11,37 +11,40 @@ export default function ResultsPage() {
     original_text = "No original text received.",
     redacted_text = "No redacted text received.",
     summary = { counts: {}, items: [] },
-    file = null, 
-
-    options = { redact_emails: true, redact_phones: true, redact_names: false, redact_addresses: false },
+    file = null,
+    download_url = null,
+    // These are mostly for future display / debugging if needed
+    options = {
+      redact_emails: true,
+      redact_phones: true,
+      redact_names: false,
+      redact_addresses: false,
+    },
     labelStyle = "typed",
     customLabel = null,
-  } = location.state || {};
+  } = (location.state as any) || {};
 
-  const [activeTab, setActiveTab] = useState<"original" | "redacted" | "summary" | "file">("original");
+  const [activeTab, setActiveTab] = useState<"original" | "redacted" | "summary" | "file">(
+    "original"
+  );
   const [downloading, setDownloading] = useState(false);
 
   async function handleDownload() {
     try {
-      if (!file?.url) {
-        alert("No file available for download.");
+      if (!download_url) {
+        alert("No download URL available. Try re-running the redaction.");
         return;
       }
+
       setDownloading(true);
 
-      const blob = await downloadRedactedFileFromPath(file.url, {
-        redact_emails: options.redact_emails ?? true,
-        redact_phones: options.redact_phones ?? true,
-        redact_names: options.redact_names ?? false,
-        redact_addresses: options.redact_addresses ?? false,
-        label_style: labelStyle,
-        custom_label: customLabel ?? undefined,
-      });
+      // This calls the backend's /api/download/... endpoint via the helper
+      const blob = await downloadRedactedFileByUrl(download_url);
 
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = blobUrl;
-      a.download = file.name ? `redacted_${file.name}` : "redacted_output.pdf";
+      a.download = file?.name ? `redacted_${file.name}` : "redacted_output.pdf";
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -57,10 +60,14 @@ export default function ResultsPage() {
   async function handleCopySummary() {
     const lines = [
       "Redaction Summary",
-      `Counts: ${Object.entries(summary.counts).map(([k,v]) => `${k}:${v}`).join(" • ")}`,
+      `Counts: ${Object.entries(summary.counts)
+        .map(([k, v]) => `${k}:${v}`)
+        .join(" • ")}`,
       "",
       "Items:",
-      ...summary.items.map((it: any, i: number) => `${i+1}. ${it.type}: "${it.original}" → ${it.label}`)
+      ...summary.items.map(
+        (it: any, i: number) => `${i + 1}. ${it.type}: "${it.original}" → ${it.label}`
+      ),
     ];
     const text = lines.join("\n");
     try {
@@ -77,21 +84,54 @@ export default function ResultsPage() {
         <h1 className="results-heading">Redaction Results</h1>
 
         <div className="tabs-row" role="tablist" aria-label="Results tabs">
-          <button role="tab" aria-selected={activeTab === "original"} className={`tab ${activeTab === "original" ? "active" : ""}`} onClick={() => setActiveTab("original")}>Original</button>
-          <button role="tab" aria-selected={activeTab === "redacted"} className={`tab ${activeTab === "redacted" ? "active" : ""}`} onClick={() => setActiveTab("redacted")}>Redacted</button>
-          <button role="tab" aria-selected={activeTab === "summary"} className={`tab ${activeTab === "summary" ? "active" : ""}`} onClick={() => setActiveTab("summary")}>Summary</button>
-          {file?.url && <button role="tab" aria-selected={activeTab === "file"} className={`tab ${activeTab === "file" ? "active" : ""}`} onClick={() => setActiveTab("file")}>File Preview</button>}
+          <button
+            role="tab"
+            aria-selected={activeTab === "original"}
+            className={`tab ${activeTab === "original" ? "active" : ""}`}
+            onClick={() => setActiveTab("original")}
+          >
+            Original
+          </button>
+          <button
+            role="tab"
+            aria-selected={activeTab === "redacted"}
+            className={`tab ${activeTab === "redacted" ? "active" : ""}`}
+            onClick={() => setActiveTab("redacted")}
+          >
+            Redacted
+          </button>
+          <button
+            role="tab"
+            aria-selected={activeTab === "summary"}
+            className={`tab ${activeTab === "summary" ? "active" : ""}`}
+            onClick={() => setActiveTab("summary")}
+          >
+            Summary
+          </button>
+          {file?.url && (
+            <button
+              role="tab"
+              aria-selected={activeTab === "file"}
+              className={`tab ${activeTab === "file" ? "active" : ""}`}
+              onClick={() => setActiveTab("file")}
+            >
+              File Preview
+            </button>
+          )}
         </div>
 
         <div className="content-row">
-          {/* LEFT: main content */}
           <div className="main-column">
             {activeTab === "original" && (
-              <pre className="text-box" aria-label="Original text">{original_text}</pre>
+              <pre className="text-box" aria-label="Original text">
+                {original_text}
+              </pre>
             )}
 
             {activeTab === "redacted" && (
-              <pre className="text-box" aria-label="Redacted text">{redacted_text}</pre>
+              <pre className="text-box" aria-label="Redacted text">
+                {redacted_text}
+              </pre>
             )}
 
             {activeTab === "summary" && (
@@ -99,7 +139,7 @@ export default function ResultsPage() {
                 <h3>Summary of Redaction</h3>
 
                 <div className="stats-row">
-                  {["NAME","EMAIL","PHONE","ADDRESS"].map((k) => (
+                  {["NAME", "EMAIL", "PHONE", "ADDRESS"].map((k) => (
                     <div key={k} className="stat-card" aria-hidden>
                       <div className="stat-title">{k}</div>
                       <div className="stat-value">{summary.counts[k] ?? 0}</div>
@@ -138,20 +178,28 @@ export default function ResultsPage() {
             )}
 
             <div className="actions-row">
-              <button className="btn btn-secondary" onClick={() => navigate("/")}>Back</button>
+              <button className="btn btn-secondary" onClick={() => navigate("/")}>
+                Back
+              </button>
 
               <div style={{ flex: 1 }} />
 
-              <button className="btn btn-ghost" onClick={handleCopySummary}>Copy Summary</button>
+              <button className="btn btn-ghost" onClick={handleCopySummary}>
+                Copy Summary
+              </button>
 
-              <button className="btn btn-primary" onClick={handleDownload} disabled={downloading}>
+              <button
+                className="btn btn-primary"
+                onClick={handleDownload}
+                disabled={downloading}
+              >
                 {downloading ? "Downloading…" : "Download Redacted PDF"}
               </button>
             </div>
           </div>
-
         </div>
       </div>
     </div>
   );
 }
+

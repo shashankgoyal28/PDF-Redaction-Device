@@ -10,7 +10,6 @@ def apply_redaction(text: str, entities: List[Dict], label_style: str = "typed",
     """
     if not entities:
         return text, []
-
     counters = {}
     items = []
 

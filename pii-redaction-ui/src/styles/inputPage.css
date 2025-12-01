@@ -6,20 +6,18 @@
   width: 100%;
   box-sizing: border-box;
 
-
-  border: 2px dashed #cbd5e1;      
-  border-radius: 12px;             
-  background: linear-gradient(180deg, rgba(249,250,252,0.6), rgba(255,255,255,0.45));
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(249, 250, 252, 0.6), rgba(255, 255, 255, 0.45));
   padding: 18px;
   margin: 10px 0 18px 0;
 
-
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 6px 16px rgba(14,20,30,0.03);
-
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 6px 16px rgba(14, 20, 30, 0.03);
 
   overflow: hidden;
+  cursor: pointer;
 }
-
 
 .pdf-dropzone .hint {
   color: #475569;
@@ -27,20 +25,19 @@
   letter-spacing: 0.1px;
 }
 
-
 .pdf-dropzone:hover {
   border-color: #94a3b8;
   transform: translateY(-1px);
-  transition: all .15s ease;
+  transition: all 0.15s ease;
 }
 
 .pdf-dropzone:focus-within {
   outline: none;
-  border-color: #6366f1;   
-  box-shadow: 0 6px 20px rgba(99,102,241,0.08);
+  border-color: #6366f1;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.08);
 }
 
-
+/* Preview (image / iframe) inside uploader */
 .pdf-dropzone img.preview,
 .pdf-dropzone iframe.preview {
   max-width: 100%;
@@ -51,5 +48,9 @@
 }
 
 @media (max-width: 480px) {
-  .pdf-dropzone { padding: 14px; min-height: 120px; border-radius: 10px; }
+  .pdf-dropzone {
+    padding: 14px;
+    min-height: 120px;
+    border-radius: 10px;
+  }
 }
