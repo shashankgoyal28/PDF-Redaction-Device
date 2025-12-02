@@ -113,7 +113,6 @@ async def redact_text(payload: RedactTextRequest):
         summary=summary,
     )
 
-
 @router.post("/redact-file", response_model=RedactionResponse)
 async def redact_file(
     file: UploadFile = File(...),
@@ -296,8 +295,7 @@ async def redact_file(
         redacted_text=redacted_text,
         summary=summary,
     )
-
-
+ 
 @router.post("/redact-from-path", response_model=RedactionResponse)
 async def redact_from_path(payload: RedactFromPathRequest):
     """
